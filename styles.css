@@ -6,3 +6,43 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+/* Make the playback bar container take the full width */
+.mixtape-playback-bar-container {
+	width: 100%;
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+/* The actual range input also spans the full width */
+.mixtape-progress-bar {
+	width: 100% !important;
+	max-width: 100% !important;
+	flex: 1 1 auto; /* if it's inside a flex container */
+}
+
+/* The actual range input also spans the full width */
+.mixtape-now-playing {
+	width: 100% !important;
+	max-width: 100% !important;
+	flex: 1 1 auto; /* if it's inside a flex container */
+	text-align: center;
+	padding-bottom: 20px;
+}
+
+.mixtape-controls-container {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+}
+
+.mixtape-controls {
+	display: flex;
+	width: 30%;
+	justify-content: space-evenly;
+	align-items: center;
+}
+
+.mixtape-audio-links {
+	width: 100%;
+}
