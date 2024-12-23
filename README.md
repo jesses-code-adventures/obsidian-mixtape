@@ -8,6 +8,12 @@ the scraped audio clips should be arranged in the order of the pages that were p
 
 this allows the user to keep track of notes on audio files, switch out the audio files (eg replace with a new version) and similar, so as to be able to keep all the progress for a project within obsidian and immediately have a listenable playlist of audio files to work with.
 
+## installation
+
+1. Navigate to your vault's directory in the terminal.
+2. run `cd .obsidian && mkdir -p plugins && cd plugins && git clone https://github.com/jesses-code-adventures/obsidian-mixtape obsidian-mixtape`
+3. In Obsidian, run `Reload app without saving` from the command palette.
+
 ## usage
 
 1. In your current folder there should be a file, or a collection of files, that contain audio links.
