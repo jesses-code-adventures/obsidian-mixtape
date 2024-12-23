@@ -1,11 +1,11 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
-	"version": "1.0.0",
+	"id": "obsidian-mixtape",
+	"name": "obsidian-mixtape",
+	"version": "0.0.1",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"description": "Scrapes audio files from one or more markdown and arranges them in a playlist element.",
+	"author": "Jesse Williams",
+	"authorUrl": "https://github.com/jesses-code-adventures",
+	"fundingUrl": "",
 	"isDesktopOnly": false
 }
