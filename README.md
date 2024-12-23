@@ -26,4 +26,4 @@ _PROJECT.md
 ````
 
 3. Go into presentation mode to see your media player.
-   <img width="827" alt="Screenshot 2024-12-24 at 2 37 42 am" src="https://github.com/user-attachments/assets/136bc2b7-96f5-4d56-93d1-d09b0bed00cf" />
+   <img width="600" alt="Screenshot 2024-12-24 at 2 37 42 am" src="https://github.com/user-attachments/assets/136bc2b7-96f5-4d56-93d1-d09b0bed00cf" />
