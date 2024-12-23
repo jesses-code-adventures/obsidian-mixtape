@@ -2,7 +2,7 @@
 	"id": "obsidian-mixtape",
 	"name": "obsidian-mixtape",
 	"version": "0.0.1",
-	"minAppVersion": "0.15.0",
+	"minAppVersion": "1.7.0",
 	"description": "Scrapes audio files from one or more markdown and arranges them in a playlist element.",
 	"author": "Jesse Williams",
 	"authorUrl": "https://github.com/jesses-code-adventures",
