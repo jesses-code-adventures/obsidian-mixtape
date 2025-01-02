@@ -7,25 +7,22 @@ If your plugin does not need CSS, delete this file.
 
 */
 
-/* Make the playback bar container take the full width */
 .mixtape-playback-bar-container {
 	width: 100%;
 	padding-top: 10px;
 	padding-bottom: 10px;
 }
 
-/* The actual range input also spans the full width */
 .mixtape-progress-bar {
 	width: 100% !important;
 	max-width: 100% !important;
-	flex: 1 1 auto; /* if it's inside a flex container */
+	flex: 1 1 auto;
 }
 
-/* The actual range input also spans the full width */
 .mixtape-now-playing {
 	width: 100% !important;
 	max-width: 100% !important;
-	flex: 1 1 auto; /* if it's inside a flex container */
+	flex: 1 1 auto;
 	text-align: center;
 	padding-bottom: 20px;
 }

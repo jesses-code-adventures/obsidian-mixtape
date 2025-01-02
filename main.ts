@@ -1,67 +1,38 @@
+import ObsidianMixtapeControls from 'controls';
+import { getCurrentFolderPath, getPathsAndContents, isAudioLink } from 'utils';
 import { Plugin, TFile, MarkdownPostProcessorContext, normalizePath } from 'obsidian';
 
-interface ObsidianMixtapeSettings { }
-
-const DEFAULT_SETTINGS: ObsidianMixtapeSettings = {}
-
-function getCurrentFolderPath(ctx: MarkdownPostProcessorContext) {
-	const currentFilePath = ctx.sourcePath;
-	const folderParts = currentFilePath.split('/');
-	folderParts.pop(); // remove the filename
-	return folderParts.join('/');
+interface ObsidianMixtapeSettings {
+	defaultSongsFile: string
+	tracklistCodeblockLabel: string
 }
 
-async function getPathsAndContents(source: string, currentFolderPath: string) {
-	const filePaths = source
-		.split('\n')
-		.map((line) => line.trim())
-		.filter((line) => line.length > 0);
-
-	const fileContents = await Promise.all(
-		filePaths.map(async (rawPath) => {
-			let pathToLoad: string;
-			if (!rawPath.includes('/')) {
-				pathToLoad = `${currentFolderPath}/${rawPath}`;
-			} else {
-				pathToLoad = rawPath;
-			}
-
-			const absFile = this.app.vault.getAbstractFileByPath(pathToLoad);
-			if (absFile instanceof TFile) {
-				return await this.app.vault.read(absFile);
-			}
-
-			return null;
-		})
-	);
-	return [filePaths, fileContents]
+const DEFAULT_SETTINGS: ObsidianMixtapeSettings = {
+	defaultSongsFile: "_PROJECT.md",
+	tracklistCodeblockLabel: "mixtape",
 }
+
 
 export default class ObsidianMixtape extends Plugin {
 	settings: ObsidianMixtapeSettings = DEFAULT_SETTINGS
-	async onload() {
-		this.registerMarkdownCodeBlockProcessor(
-			'mixtape',
-			async (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
-				const wrapper = el.createDiv({ cls: 'mixtape-wrapper' });
-				const currentFolderPath = getCurrentFolderPath(ctx)
-				const [filePaths, fileContents] = await getPathsAndContents(source, currentFolderPath);
-				filePaths.forEach((rawPath, i) => {
-					const content = fileContents[i];
-					if (content == null) {
-						wrapper.createDiv({ text: `File not found: ${rawPath}` });
-						return;
-					}
 
-					if (rawPath.endsWith('.md')) {
-						this.asAudioElements(wrapper, content, currentFolderPath)
-					}
-				});
-			}
-		);
+	private handleGetResource(currentFolderPath: string, linkPath: string) {
+		if (linkPath.startsWith('./')) {
+			linkPath = linkPath.substring(2);
+			linkPath = `${currentFolderPath}/${linkPath}`;
+		}
+		linkPath = decodeURIComponent(linkPath);
+		linkPath = normalizePath(linkPath);
+
+		let resourcePath = linkPath;
+		const file = this.app.vault.getAbstractFileByPath(linkPath);
+		if (file instanceof TFile) {
+			resourcePath = this.app.vault.getResourcePath(file);
+		}
+		return resourcePath
 	}
 
-	asAudioElements(
+	private renderPlayer(
 		wrapper: HTMLDivElement,
 		content: string,
 		currentFolderPath: string
@@ -77,55 +48,45 @@ export default class ObsidianMixtape extends Plugin {
 		});
 		progressBar.addClass('mixtape-progress-bar');
 
-		const nowPlayingEl = audioContainer.createDiv({ cls: 'mixtape-now-playing' });
-		nowPlayingEl.setText('Nothing playing yet');
-
-		const mixtapeControlsContainer = audioContainer.createDiv({
-			cls: 'mixtape-controls-container',
-		});
-		const controlBar = mixtapeControlsContainer.createDiv({
-			cls: 'mixtape-controls',
-		});
-
-		const btnPrev = controlBar.createEl('button', { text: 'Prev' });
-		const btnPlayPause = controlBar.createEl('button', { text: 'Play' });
-		const btnNext = controlBar.createEl('button', { text: 'Next' });
-
 		const audioElements: HTMLAudioElement[] = [];
-		let currentIndex = 0;
+		let selectedTrackIdx = -1;
+		const playerControls = new ObsidianMixtapeControls(audioContainer, audioElements, selectedTrackIdx);
 
-		const updatePlayPauseText = () => {
-			const currentAudio = audioElements[currentIndex];
-			if (currentAudio && !currentAudio.paused) {
-				btnPlayPause.setText('Pause');
-			} else {
-				btnPlayPause.setText('Play');
+		// Regex patterns for standard [title](url) links and wiki [[file]] links
+		const mdLinkRegex = /\[([^\]]*?)\]\(([^)]+)\)/g;
+		const wikiLinkRegex = /!?\[\[([^\]]+)\]\]/g;
+
+		for (const match of content.matchAll(mdLinkRegex)) {
+			const linkText = match[1];
+			const linkPath = match[2];
+			if (isAudioLink(linkPath)) {
+				appendTrackToPlayer(linkText, linkPath, this.handleGetResource.bind(this));
 			}
-		};
+		}
 
-		const audioExtensions = ['mp3', 'wav', 'flac', 'm4a', 'ogg'];
-		const isAudioLink = (link: string): boolean => {
-			const lower = link.toLowerCase();
-			return audioExtensions.some((ext) => lower.endsWith('.' + ext));
-		};
-
-		const createAudioElement = (linkText: string, linkPath: string) => {
-			if (linkPath.startsWith('./')) {
-				linkPath = linkPath.substring(2);
-				linkPath = `${currentFolderPath}/${linkPath}`;
+		for (const match of content.matchAll(wikiLinkRegex)) {
+			const linkText = match[1];
+			const [actualPath] = linkText.split('|');
+			if (isAudioLink(actualPath)) {
+				appendTrackToPlayer(actualPath, actualPath, this.handleGetResource.bind(this));
 			}
-			linkPath = decodeURIComponent(linkPath);
-			linkPath = normalizePath(linkPath);
+		}
 
-			let finalSrc = linkPath;
-			const file = this.app.vault.getAbstractFileByPath(linkPath);
-			if (file instanceof TFile) {
-				finalSrc = this.app.vault.getResourcePath(file);
+		if (audioElements.length === 0) return;
+
+		progressBar.addEventListener('input', () => {
+			const audio = audioElements[selectedTrackIdx];
+			const fraction = Number(progressBar.value) / 100;
+			if (audio.duration && !Number.isNaN(audio.duration)) {
+				audio.currentTime = fraction * audio.duration;
 			}
+		});
 
+		function appendTrackToPlayer(linkText: string, linkPath: string, getResourcePathFunc: (currentFolderPath: string, linkPath: string) => string) {
+			const resourcePath = getResourcePathFunc(currentFolderPath, linkPath);
 			audioContainer.createDiv({ text: linkText || linkPath });
 			const audioEl = audioContainer.createEl('audio', {
-				attr: { src: finalSrc, controls: '' },
+				attr: { src: resourcePath, controls: '' },
 			});
 			audioEl.addClass('mixtape-audio');
 			audioEl.setText(linkText);
@@ -137,25 +98,23 @@ export default class ObsidianMixtape extends Plugin {
 					}
 				});
 				const newIndex = audioElements.indexOf(audioEl);
-				if (newIndex !== currentIndex) {
-					audioElements[currentIndex].currentTime = 0;
-					currentIndex = newIndex;
-					audioElements[currentIndex].currentTime = 0;
+				if (newIndex !== selectedTrackIdx) {
+					if (selectedTrackIdx >= 0) {
+						audioElements[selectedTrackIdx].currentTime = 0;
+					}
+					selectedTrackIdx = newIndex;
+					audioElements[selectedTrackIdx].currentTime = 0;
 				}
-				nowPlayingEl.setText(`Now Playing: ${linkText}`);
-				updatePlayPauseText();
 			});
 
 			audioEl.addEventListener('pause', () => {
-				if (audioEl === audioElements[currentIndex]) {
-					// If it's the current track, show "Paused"
-					nowPlayingEl.setText(`Paused: ${linkText}`);
-					updatePlayPauseText();
+				if (audioEl === audioElements[selectedTrackIdx]) {
+					playerControls.updatePlayPauseText()
 				}
 			});
 
 			audioEl.addEventListener('timeupdate', () => {
-				if (audioEl === audioElements[currentIndex]) {
+				if (audioEl === audioElements[selectedTrackIdx]) {
 					const duration = audioEl.duration || 0;
 					const current = audioEl.currentTime || 0;
 					if (duration > 0) {
@@ -168,102 +127,42 @@ export default class ObsidianMixtape extends Plugin {
 			});
 
 			audioEl.addEventListener('loadedmetadata', () => {
-				if (audioEl === audioElements[currentIndex]) {
+				if (audioEl === audioElements[selectedTrackIdx]) {
 					progressBar.value = '0';
 				}
 			});
 
 			audioEl.addEventListener('ended', () => {
-				if (currentIndex < audioElements.length - 1) {
-					currentIndex += 1;
-				} else {
-					currentIndex = 0;
-				}
-				playCurrent();
+				playerControls.goToNext();
 			});
 
 			audioElements.push(audioEl);
-		};
-
-		// Regex patterns for standard [title](url) links and wiki [[file]] links
-		const mdLinkRegex = /\[([^\]]*?)\]\(([^)]+)\)/g;
-		const wikiLinkRegex = /!?\[\[([^\]]+)\]\]/g;
-
-		for (const match of content.matchAll(mdLinkRegex)) {
-			const linkText = match[1];
-			const linkPath = match[2];
-			if (isAudioLink(linkPath)) {
-				createAudioElement(linkText, linkPath);
-			}
+			return audioElements;
 		}
-
-		for (const match of content.matchAll(wikiLinkRegex)) {
-			const linkText = match[1];
-			const [actualPath] = linkText.split('|');
-			if (isAudioLink(actualPath)) {
-				createAudioElement(actualPath, actualPath);
+	}
+	
+	/** renders the player if a ```mixtape``` codeblock is found */
+	async handleMarkdownProcessingOnLoad(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
+		const wrapper = el.createDiv({ cls: 'mixtape-wrapper' });
+		const currentFolderPath = getCurrentFolderPath(ctx)
+		const [filePaths, fileContents] = await getPathsAndContents(source, currentFolderPath);
+		filePaths.forEach((rawPath, i) => {
+			const content = fileContents[i];
+			if (content == null) {
+				wrapper.createDiv({ text: `File not found: ${rawPath}` });
+				return;
 			}
-		}
-
-		if (audioElements.length === 0) return;
-
-		const playCurrent = () => {
-			const audio = audioElements[currentIndex];
-			if (audio) {
-				audio.currentTime = 0;
-				audio.play();
-				nowPlayingEl.setText(`Now Playing: ${audio.textContent}`);
-				updatePlayPauseText();
-			}
-		};
-
-		const pauseCurrent = () => {
-			const audio = audioElements[currentIndex];
-			if (audio) {
-				audio.pause();
-				nowPlayingEl.setText(`Paused: ${audio.textContent}`);
-				updatePlayPauseText();
-			}
-		};
-
-		const goToNext = () => {
-			pauseCurrent();
-			audioElements[currentIndex].currentTime = 0;
-			currentIndex = (currentIndex + 1) % audioElements.length;
-			playCurrent();
-		};
-
-		const goToPrev = () => {
-			pauseCurrent();
-			audioElements[currentIndex].currentTime = 0;
-			currentIndex = (currentIndex - 1 + audioElements.length) % audioElements.length;
-			playCurrent();
-		};
-
-		btnPrev.addEventListener('click', () => {
-			goToPrev();
-		});
-
-		btnPlayPause.addEventListener('click', () => {
-			const currentAudio = audioElements[currentIndex];
-			if (currentAudio.paused) {
-				currentAudio.play(); // triggers 'play' event
-			} else {
-				currentAudio.pause(); // triggers 'pause' event
+			if (rawPath.endsWith('.md')) {
+				this.renderPlayer(wrapper, content, currentFolderPath)
 			}
 		});
+	}
 
-		btnNext.addEventListener('click', () => {
-			goToNext();
-		});
-
-		progressBar.addEventListener('input', () => {
-			const audio = audioElements[currentIndex];
-			const fraction = Number(progressBar.value) / 100;
-			if (audio.duration && !Number.isNaN(audio.duration)) {
-				audio.currentTime = fraction * audio.duration;
-			}
-		});
+	async onload() {
+		this.registerMarkdownCodeBlockProcessor(
+			'mixtape',
+			this.handleMarkdownProcessingOnLoad.bind(this)
+		);
 	}
 
 	async loadSettings() {
@@ -274,22 +173,6 @@ export default class ObsidianMixtape extends Plugin {
 		await this.saveData(this.settings);
 	}
 }
-
-// class SampleModal extends Modal {
-// 	constructor(app: App) {
-// 		super(app);
-// 	}
-//
-// 	onOpen() {
-// 		const {contentEl} = this;
-// 		contentEl.setText('Woah!');
-// 	}
-//
-// 	onClose() {
-// 		const {contentEl} = this;
-// 		contentEl.empty();
-// 	}
-// }
 
 // class SampleSettingTab extends PluginSettingTab {
 // 	plugin: ObsidianMixtape;
