@@ -14,10 +14,21 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '23'
+
+      - name: install dependencies
+        run: npm ci
+
+      - name: build
+        run: npm run build
+
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             manifest.json
-            main.js
             styles.css
+            main.js
