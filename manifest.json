@@ -1,7 +1,7 @@
 {
 	"id": "mixtape",
 	"name": "Mixtape",
-	"version": "0.0.1",
+	"version": "0.0.3",
 	"minAppVersion": "1.7.0",
 	"description": "Scrapes audio files from one or more markdown and arranges them in a playlist element.",
 	"author": "Jesse Williams",
