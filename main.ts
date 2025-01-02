@@ -1,3 +1,3 @@
-import ObsidianMixtape from "mixtape";
+import Mixtape from "mixtape";
 
-export default ObsidianMixtape
+export default Mixtape

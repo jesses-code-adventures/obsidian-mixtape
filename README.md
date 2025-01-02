@@ -24,3 +24,7 @@ _PROJECT.md
 3. Go into presentation mode to see your media player.
 
 <img width="600" alt="Screenshot 2024-12-24 at 2 37 42 am" src="https://github.com/user-attachments/assets/136bc2b7-96f5-4d56-93d1-d09b0bed00cf" />
+
+## todo
+
+-   [ ] "Restrict To Title" setting, where the user should be able to specify a markdown title in which the audio files should ONLY be scraped from. This would be nice for having something like a `# Current Version` title that you want Mixtape to exclusively scrape from, so you can still keep your previous versions in the same file under a different heading.

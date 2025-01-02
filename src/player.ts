@@ -1,21 +1,21 @@
-import ObsidianMixtapeControls from 'controls';
-import ObsidianMixtapeProgressBar from 'progressBar';
+import Controls from 'controls';
+import ProgressBar from 'progressBar';
 import { isAudioLink } from 'utils';
 import { App, normalizePath, TFile } from 'obsidian';
-import ObsidianMixtapeTrack from 'track';
-import { ObsidianMixtapeSettings } from 'settings';
+import Track from 'track';
+import { Settings } from 'settings';
 
-export default class ObsidianMixtapePlayer {
+export default class Player {
 	app: App
 	currentDir: string
 	content: string
 	parent: HTMLDivElement
 	container: HTMLDivElement
-	controls: ObsidianMixtapeControls
+	controls: Controls
 	selectedTrackIdx: number
-	progressBar: ObsidianMixtapeProgressBar
-	tracks: ObsidianMixtapeTrack[]
-	settings: ObsidianMixtapeSettings
+	progressBar: ProgressBar
+	tracks: Track[]
+	settings: Settings
 
 	constructor(app: App, parent: HTMLDivElement, content: string, currentDir: string) {
 		this.app = app
@@ -24,8 +24,8 @@ export default class ObsidianMixtapePlayer {
 		this.currentDir = currentDir;
 		this.tracks = [];
 		this.selectedTrackIdx = -1;
-		this.progressBar = new ObsidianMixtapeProgressBar(this)
-		this.controls = new ObsidianMixtapeControls(this);
+		this.progressBar = new ProgressBar(this)
+		this.controls = new Controls(this);
 		this.parseTracksFromContents();
 		if (this.tracks.length === 0) return;
 	}
@@ -72,7 +72,7 @@ export default class ObsidianMixtapePlayer {
 	*/
 	private appendTrackToPlayer(linkText: string, linkPath: string) {
 		const path = this.handleGetResource(this.currentDir, linkPath);
-		const track = new ObsidianMixtapeTrack(this, linkText, linkPath, path);
+		const track = new Track(this, linkText, linkPath, path);
 		this.tracks.push(track);
 	}
 

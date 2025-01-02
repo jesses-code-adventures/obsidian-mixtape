@@ -1,6 +1,6 @@
-import ObsidianMixtapePlayer from 'player';
+import Player from 'player';
 
-export default class ObsidianMixtapeTrack {
+export default class Track {
 	/** the audio element that the user can interact with to play/pause/scrub a track directly */
 	audio: HTMLAudioElement
 	/** the text to be displayed for the track in the mixtape playlist */
@@ -10,9 +10,9 @@ export default class ObsidianMixtapeTrack {
 	/** the full path to the track file defined by this plugin. */
 	fullPath: string
 	/** the player containing the track */
-	player: ObsidianMixtapePlayer
+	player: Player
 
-	constructor(player: ObsidianMixtapePlayer, text: string, linkPath: string, fullPath: string) {
+	constructor(player: Player, text: string, linkPath: string, fullPath: string) {
 		this.player = player
 		this.linkPath = linkPath
 		this.fullPath = fullPath

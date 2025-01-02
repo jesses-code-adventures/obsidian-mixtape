@@ -1,16 +1,16 @@
-import ObsidianMixtapePlayer from "player";
-import ObsidianMixtapeTrack from "track";
+import Player from "player";
+import Track from "track";
 
-export default class ObsidianMixtapeControls {
+export default class Controls {
 	container: HTMLDivElement;
 	controlBar: HTMLDivElement;
 	btnPrev: HTMLButtonElement;
 	btnPlayPause: HTMLButtonElement;
 	btnNext: HTMLButtonElement
 	nowPlayingDisplay: HTMLDivElement;
-	player: ObsidianMixtapePlayer
+	player: Player
 
-	constructor(player: ObsidianMixtapePlayer) {
+	constructor(player: Player) {
 		this.player = player;
 	}
 
@@ -76,7 +76,7 @@ export default class ObsidianMixtapeControls {
 		}
 	}
 
-	pauseTrack(track: ObsidianMixtapeTrack) {
+	pauseTrack(track: Track) {
 		track.audio.pause();
 	}
 

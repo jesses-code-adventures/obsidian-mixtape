@@ -1,11 +1,11 @@
-import ObsidianMixtapePlayer from 'player';
+import Player from 'player';
 
-export default class ObsidianMixtapeProgressBar {
-	player: ObsidianMixtapePlayer
+export default class ProgressBar {
+	player: Player
 	container: HTMLDivElement
 	bar: HTMLInputElement
 
-	constructor(player: ObsidianMixtapePlayer) {
+	constructor(player: Player) {
 		this.player = player
 	}
 

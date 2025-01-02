@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
-	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"name": "Mixtape",
+	"version": "0.0.1",
+	"description": "Scrapes audio files from one or more markdown files and arranges them in a playlist element.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

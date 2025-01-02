@@ -1,10 +1,10 @@
 import { aggregateContents as aggregateContent, getCurrentFolderPath as getCurrentDir, getPathsAndContents } from 'utils';
 import { Plugin, MarkdownPostProcessorContext } from 'obsidian'; 
-import ObsidianMixtapePlayer from 'player';
-import { ObsidianMixtapeSettings, ObsidianMixtapeSettingsTab, DEFAULT_SETTINGS } from 'settings';
+import Player from 'player';
+import { Settings, SettingsTab, DEFAULT_SETTINGS } from 'settings';
 
 
-export default class ObsidianMixtape extends Plugin {
+export default class Mixtape extends Plugin {
 	/** the html div that contains the entire plugin */
 	private container: HTMLDivElement
 	/** the raw content of the files that have been parsed from the filenames in the plugin's codeblock */
@@ -12,15 +12,15 @@ export default class ObsidianMixtape extends Plugin {
 	/** the directory in which the plugin was loaded */
 	private dir: string
 	/** the player object that contains plugin functionality */
-	private player: ObsidianMixtapePlayer
+	private player: Player
 	/** user-modifiable settings for the app, currently not editable but intended to be */
-	settings: ObsidianMixtapeSettings = DEFAULT_SETTINGS
+	settings: Settings = DEFAULT_SETTINGS
 	/** the content contained inside the codeblock where the plugin is being rendered */
 	private source: string
 
 	async onload() {
 		await this.loadSettings();
-		this.addSettingTab(new ObsidianMixtapeSettingsTab(this.app, this));
+		this.addSettingTab(new SettingsTab(this.app, this));
 		this.registerCodeblockProcessor();
 	}
 
@@ -59,7 +59,7 @@ export default class ObsidianMixtape extends Plugin {
 		this.container = el.createDiv({ cls: 'mixtape-wrapper' });
 		this.dir = getCurrentDir(ctx)
 		this.content = ''
-		this.player = new ObsidianMixtapePlayer(this.app, this.container, this.content, this.dir);
+		this.player = new Player(this.app, this.container, this.content, this.dir);
 		this.source = source
 		await this.refresh()
 	}

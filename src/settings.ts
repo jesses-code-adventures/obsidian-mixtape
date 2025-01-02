@@ -1,20 +1,20 @@
 import { PluginSettingTab, App, Setting } from 'obsidian';
-import ObsidianMixtape from 'mixtape';
+import Mixtape from 'mixtape';
 
-export interface ObsidianMixtapeSettings {
+export interface Settings {
 	defaultSongsFile: string
 	codeblockLabel: string
 }
 
-export const DEFAULT_SETTINGS: ObsidianMixtapeSettings = {
+export const DEFAULT_SETTINGS: Settings = {
 	defaultSongsFile: "_PROJECT.md",
 	codeblockLabel: "mixtape",
 }
 
-export class ObsidianMixtapeSettingsTab extends PluginSettingTab {
-	plugin: ObsidianMixtape;
+export class SettingsTab extends PluginSettingTab {
+	plugin: Mixtape;
 
-	constructor(app: App, plugin: ObsidianMixtape) {
+	constructor(app: App, plugin: Mixtape) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -23,7 +23,7 @@ export class ObsidianMixtapeSettingsTab extends PluginSettingTab {
 		const { containerEl } = this;
 
 		containerEl.empty();
-		containerEl.createEl('h2', { text: 'Obsidian Mixtape' });
+		containerEl.createEl('h2', { text: 'Mixtape' });
 
 		new Setting(containerEl)
 			.setName('Default Tracks Filename')
