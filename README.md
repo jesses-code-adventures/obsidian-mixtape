@@ -2,7 +2,7 @@
 
 this is an obsidian plugin for the three people in the world that make music on the computer and are also obsidian power users.
 
-if you'd like a workflow where you can keep info about songs, including embedded audio, across a bunch of files and then have them scraped together and turned into aplaylist/media player, then this plugin is for you.
+if you'd like a workflow where you can keep info about songs, including embedded audio, across a bunch of files and then have them scraped together and turned into a playlist/media player, then this plugin is for you.
 
 ## installation
 

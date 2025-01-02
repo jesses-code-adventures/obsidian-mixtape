@@ -16,27 +16,36 @@ class PathsAndContents {
 	}
 }
 
-export async function getPathsAndContents(source: string, currentFolderPath: string) {
+
+async function getContents(dir: string, rawPath: string) {
+	let pathToLoad: string;
+	if (!rawPath.includes('/')) {
+		pathToLoad = `${dir}/${rawPath}`;
+	} else {
+		pathToLoad = rawPath;
+	}
+
+	const absFile = this.app.vault.getAbstractFileByPath(pathToLoad);
+	if (absFile instanceof TFile) {
+		return await this.app.vault.read(absFile);
+	}
+	return null;
+}
+
+export async function getPathsAndContents(source: string, currentFolderPath: string, defaultFileName: string) {
 	const filePaths = source
 		.split('\n')
 		.map((line) => line.trim())
 		.filter((line) => line.length > 0);
 
-	const fileContents = await Promise.all(
-		filePaths.map(async (rawPath) => {
-			let pathToLoad: string;
-			if (!rawPath.includes('/')) {
-				pathToLoad = `${currentFolderPath}/${rawPath}`;
-			} else {
-				pathToLoad = rawPath;
-			}
+	if (filePaths.length === 0) {
+		console.log('no paths');
+		const contents = await getContents(currentFolderPath, defaultFileName);
+		return new PathsAndContents([defaultFileName], [contents])	
+	}
 
-			const absFile = this.app.vault.getAbstractFileByPath(pathToLoad);
-			if (absFile instanceof TFile) {
-				return await this.app.vault.read(absFile);
-			}
-			return null;
-		})
+	const fileContents = await Promise.all(
+		filePaths.map(async (rawPath) => await getContents(currentFolderPath, rawPath))
 	);
 	return new PathsAndContents(filePaths, fileContents as unknown[])
 }

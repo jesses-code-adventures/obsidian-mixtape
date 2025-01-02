@@ -3,6 +3,7 @@ import ObsidianMixtapeProgressBar from 'progressBar';
 import { isAudioLink } from 'utils';
 import { App, normalizePath, TFile } from 'obsidian';
 import ObsidianMixtapeTrack from 'track';
+import { ObsidianMixtapeSettings } from 'settings';
 
 export default class ObsidianMixtapePlayer {
 	app: App
@@ -14,6 +15,7 @@ export default class ObsidianMixtapePlayer {
 	selectedTrackIdx: number
 	progressBar: ObsidianMixtapeProgressBar
 	tracks: ObsidianMixtapeTrack[]
+	settings: ObsidianMixtapeSettings
 
 	constructor(app: App, parent: HTMLDivElement, content: string, currentDir: string) {
 		this.app = app
