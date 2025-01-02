@@ -1,6 +1,6 @@
 {
 	"name": "Mixtape",
-	"version": "0.0.7",
+	"version": "0.0.8",
 	"description": "Scrapes audio files from one or more markdown files and arranges them in a playlist element.",
 	"main": "main.js",
 	"scripts": {
