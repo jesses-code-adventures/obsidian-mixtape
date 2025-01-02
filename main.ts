@@ -12,7 +12,6 @@ const DEFAULT_SETTINGS: ObsidianMixtapeSettings = {
 	tracklistCodeblockLabel: "mixtape",
 }
 
-
 export default class ObsidianMixtape extends Plugin {
 	settings: ObsidianMixtapeSettings = DEFAULT_SETTINGS
 
@@ -32,25 +31,25 @@ export default class ObsidianMixtape extends Plugin {
 		return resourcePath
 	}
 
+	/** renders the player inside the provided parent element */
 	private renderPlayer(
-		wrapper: HTMLDivElement,
+		parent: HTMLDivElement,
 		content: string,
 		currentFolderPath: string
 	) {
-		const audioContainer = wrapper.createDiv({ cls: 'mixtape-audio-links' });
-
-		const playbackBarContainer = audioContainer.createDiv({
+		const playerContainer = parent.createDiv({ cls: 'mixtape-audio-links' });
+		const playbackBarContainer = playerContainer.createDiv({
 			cls: 'mixtape-playback-bar-container',
 		});
 		const progressBar = playbackBarContainer.createEl('input', {
+			cls: 'mixtape-progress-bar',
 			type: 'range',
 			value: '0',
 		});
-		progressBar.addClass('mixtape-progress-bar');
 
 		const audioElements: HTMLAudioElement[] = [];
 		let selectedTrackIdx = -1;
-		const playerControls = new ObsidianMixtapeControls(audioContainer, audioElements, selectedTrackIdx);
+		const playerControls = new ObsidianMixtapeControls(playerContainer, audioElements, selectedTrackIdx);
 
 		// Regex patterns for standard [title](url) links and wiki [[file]] links
 		const mdLinkRegex = /\[([^\]]*?)\]\(([^)]+)\)/g;
@@ -84,8 +83,8 @@ export default class ObsidianMixtape extends Plugin {
 
 		function appendTrackToPlayer(linkText: string, linkPath: string, getResourcePathFunc: (currentFolderPath: string, linkPath: string) => string) {
 			const resourcePath = getResourcePathFunc(currentFolderPath, linkPath);
-			audioContainer.createDiv({ text: linkText || linkPath });
-			const audioEl = audioContainer.createEl('audio', {
+			playerContainer.createDiv({ text: linkText || linkPath });
+			const audioEl = playerContainer.createEl('audio', {
 				attr: { src: resourcePath, controls: '' },
 			});
 			audioEl.addClass('mixtape-audio');
@@ -142,20 +141,31 @@ export default class ObsidianMixtape extends Plugin {
 	}
 	
 	/** renders the player if a ```mixtape``` codeblock is found */
-	async handleMarkdownProcessingOnLoad(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
+	private async handleMarkdownProcessingOnLoad(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
 		const wrapper = el.createDiv({ cls: 'mixtape-wrapper' });
 		const currentFolderPath = getCurrentFolderPath(ctx)
-		const [filePaths, fileContents] = await getPathsAndContents(source, currentFolderPath);
-		filePaths.forEach((rawPath, i) => {
-			const content = fileContents[i];
+		const pathsAndContents = await getPathsAndContents(source, currentFolderPath);
+		const paths = pathsAndContents.paths
+		const contents = pathsAndContents.contents
+		let allContents = '';
+		paths.forEach((rawPath, i) => {
+			if (!rawPath.endsWith('.md')) {
+				return
+			}
+			const content = contents[i];
 			if (content == null) {
-				wrapper.createDiv({ text: `File not found: ${rawPath}` });
 				return;
 			}
-			if (rawPath.endsWith('.md')) {
-				this.renderPlayer(wrapper, content, currentFolderPath)
+			if (typeof content !== 'string') {
+				throw new Error('Expected markdown file to have string contents')
 			}
+			allContents += content
 		});
+		if (!allContents) {
+			wrapper.createDiv({ text: 'No audio files found in the provided paths' })
+			return
+		}
+		this.renderPlayer(wrapper, allContents, currentFolderPath);
 	}
 
 	async onload() {

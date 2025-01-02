@@ -7,6 +7,15 @@ export function getCurrentFolderPath(ctx: MarkdownPostProcessorContext) {
 	return folderParts.join('/');
 }
 
+class PathsAndContents {
+	paths: string[]
+	contents: unknown[]
+	constructor(paths: string[], contents: unknown[]) {
+		this.paths = paths;
+		this.contents = contents;
+	}
+}
+
 export async function getPathsAndContents(source: string, currentFolderPath: string) {
 	const filePaths = source
 		.split('\n')
@@ -26,11 +35,10 @@ export async function getPathsAndContents(source: string, currentFolderPath: str
 			if (absFile instanceof TFile) {
 				return await this.app.vault.read(absFile);
 			}
-
 			return null;
 		})
 	);
-	return [filePaths, fileContents]
+	return new PathsAndContents(filePaths, fileContents as unknown[])
 }
 
 export function isAudioLink(link: string): boolean {

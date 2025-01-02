@@ -9,11 +9,11 @@ export default class ObsidianMixtapeControls {
 	nowPlayingDisplay: HTMLDivElement;
 	selectedTrackIdx: number;
 
-	constructor(audioContainer: HTMLDivElement, audioElements: HTMLAudioElement[], selectedTrackIdx: number) {
-		this.parentContainer = audioContainer;
+	constructor(playerContainer: HTMLDivElement, audioElements: HTMLAudioElement[], selectedTrackIdx: number) {
+		this.parentContainer = playerContainer;
 		this.selectedTrackIdx = selectedTrackIdx;
 		this.audioElements = audioElements;
-		this.container = audioContainer.createDiv({
+		this.container = playerContainer.createDiv({
 			cls: 'mixtape-controls-container',
 		});
 		this.controlBar = this.container.createDiv({
@@ -22,7 +22,7 @@ export default class ObsidianMixtapeControls {
 		this.btnPrev = this.controlBar.createEl('button', { text: '⏮️' });
 		this.btnPlayPause = this.controlBar.createEl('button', { text: '▶️'  });
 		this.btnNext = this.controlBar.createEl('button', { text: '⏭️' });
-		this.nowPlayingDisplay = audioContainer.createDiv({ cls: 'mixtape-now-playing' });
+		this.nowPlayingDisplay = playerContainer.createDiv({ cls: 'mixtape-now-playing' });
 		this.nowPlayingDisplay.setText('');
 		this.registerListeners();
 	}
