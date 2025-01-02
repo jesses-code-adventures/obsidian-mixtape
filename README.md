@@ -1,4 +1,4 @@
-# obsidian-mixtape
+# mixtape
 
 this is an obsidian plugin for the three people in the world that make music on the computer and are also obsidian power users.
 
