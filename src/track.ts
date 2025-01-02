@@ -37,19 +37,20 @@ export default class ObsidianMixtapeTrack {
 				if (track.audio === this.audio) {
 					idx = i
 				} else {
-					track.audio.pause();
+					this.player.controls.pauseTrack(track);
 					track.audio.currentTime = 0;
 				}
 			}
 			this.player.setSelectedTrack(idx);
+			this.player.controls.updatePlayPauseText();
 		});
 
 		this.audio.addEventListener('pause', () => {
-			const track = this.player.getSelectedTrack();
-			if (!track || this.audio !== track.audio) {
-				return
+			const selected = this.player.getSelectedTrack();
+			if (!selected || selected.audio !== this.audio) {
+				return;
 			}
-			this.player.controls.updatePlayPauseText()
+			this.player.controls.updatePlayPauseText();
 		});
 
 		this.audio.addEventListener('timeupdate', () => {

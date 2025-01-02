@@ -37,6 +37,11 @@ export default class ObsidianMixtapePlayer {
 		}
 	}
 
+	setContent(content: string) {
+		this.content = content;
+		this.parseTracksFromContents()
+	}
+
 	getSelectedTrack() {
 		if (this.tracks.length === 0 || this.selectedTrackIdx >= this.tracks.length) {
 			return null

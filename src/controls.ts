@@ -1,4 +1,5 @@
 import ObsidianMixtapePlayer from "player";
+import ObsidianMixtapeTrack from "track";
 
 export default class ObsidianMixtapeControls {
 	container: HTMLDivElement;
@@ -62,7 +63,7 @@ export default class ObsidianMixtapeControls {
 			this.nowPlayingDisplay.setText('');
 			return
 		}
-		const targetButtonText = track.audio.paused ? '▶️' : '⏸️' 
+		const targetButtonText = track.audio.paused ? '▶️' : '⏸️'
 		const targetPlaybackStatus = track.audio.paused ? 'Paused' : 'Playing'
 		this.btnPlayPause.setText(targetButtonText);
 		this.nowPlayingDisplay.setText(`${targetPlaybackStatus}: ${track.audio.textContent}`);
@@ -71,9 +72,12 @@ export default class ObsidianMixtapeControls {
 	pause() {
 		const track = this.player.getSelectedTrack();
 		if (track) {
-			track.audio.pause();
-			this.updatePlayPauseText();
+			this.pauseTrack(track);
 		}
+	}
+
+	pauseTrack(track: ObsidianMixtapeTrack) {
+		track.audio.pause();
 	}
 
 	/** function to call externally, on events where playback of a track has ended */
@@ -87,7 +91,7 @@ export default class ObsidianMixtapeControls {
 		// increment the selected track index
 		let targetTrackIdx = this.player.selectedTrackIdx + 1
 		if (targetTrackIdx >= this.player.tracks.length) {
-			targetTrackIdx = 0	
+			targetTrackIdx = 0
 		}
 		this.player.setSelectedTrack(targetTrackIdx);
 		this.play();
@@ -97,7 +101,7 @@ export default class ObsidianMixtapeControls {
 		// if we're on the first track, loop back to the last track
 		let targetTrackIdx = this.player.selectedTrackIdx - 1
 		if (targetTrackIdx < 0) {
-			targetTrackIdx = this.player.tracks.length - 1	
+			targetTrackIdx = this.player.tracks.length - 1
 		}
 		this.restartSelectedTrack();
 		this.player.selectedTrackIdx = targetTrackIdx;
@@ -121,7 +125,6 @@ export default class ObsidianMixtapeControls {
 		const track = this.player.getSelectedTrack()
 		if (track) {
 			track.audio.play();
-			this.updatePlayPauseText();
 			return
 		}
 	}
