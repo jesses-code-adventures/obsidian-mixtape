@@ -4,11 +4,13 @@ import Mixtape from 'mixtape';
 export interface Settings {
 	defaultSongsFile: string
 	codeblockLabel: string
+	preservePlaybackOnTabChange: boolean
 }
 
 export const DEFAULT_SETTINGS: Settings = {
 	defaultSongsFile: "_PROJECT.md",
 	codeblockLabel: "mixtape",
+	preservePlaybackOnTabChange: true,
 }
 
 export class SettingsTab extends PluginSettingTab {
@@ -45,6 +47,18 @@ export class SettingsTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.codeblockLabel)
 					.onChange(async (value) => {
 						this.plugin.settings.codeblockLabel = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName('Preserve playback on tab change')
+			.setDesc('Continue playing audio when switching to another tab.')
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.preservePlaybackOnTabChange)
+					.onChange(async (value) => {
+						this.plugin.settings.preservePlaybackOnTabChange = value;
 						await this.plugin.saveSettings();
 					})
 			);

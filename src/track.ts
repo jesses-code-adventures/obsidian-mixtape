@@ -22,7 +22,11 @@ export default class Track {
 	render() {
 		this.player.container.createDiv({ text: this.text || this.linkPath });
 		this.audio = this.player.container.createEl('audio', {
-			attr: { src: this.fullPath, controls: '' },
+			attr: { 
+				src: this.fullPath, 
+				controls: '',
+				preload: 'auto'
+			},
 		});
 		// TODO: actually make this css class - currently non existent
 		this.audio.addClass('mixtape-track');
@@ -30,7 +34,16 @@ export default class Track {
 		this.registerListeners();
 	}
 
+	private handleVisibilityChange = () => {
+		if (!this.player.settings.preservePlaybackOnTabChange) {
+			if (document.hidden && !this.audio.paused) {
+				this.audio.pause();
+			}
+		}
+	}
+
 	private registerListeners() {
+		document.addEventListener('visibilitychange', this.handleVisibilityChange);
 		this.audio.addEventListener('play', () => {
 			let idx = -1;
 			for (const [i, track] of this.player.getTracks().entries()) {
