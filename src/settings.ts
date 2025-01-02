@@ -26,7 +26,7 @@ export class SettingsTab extends PluginSettingTab {
 		containerEl.createEl('h2', { text: 'Mixtape' });
 
 		new Setting(containerEl)
-			.setName('Default Tracks Filename')
+			.setName('Default tracks filename')
 			.setDesc('Searches for this file in the current directory and scrapes audio files from it into the mixtape player, if found.')
 			.addText((text) =>
 				text
@@ -38,7 +38,7 @@ export class SettingsTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName('Player Codeblock Label')
+			.setName('Player codeblock label')
 			.setDesc('We inject the mixtape player into the codeblock with this label.')
 			.addText((text) =>
 				text
