@@ -1,33 +1,34 @@
+import ObsidianMixtapePlayer from "player";
+
 export default class ObsidianMixtapeControls {
-	parentContainer: HTMLDivElement;
 	container: HTMLDivElement;
 	controlBar: HTMLDivElement;
 	btnPrev: HTMLButtonElement;
 	btnPlayPause: HTMLButtonElement;
 	btnNext: HTMLButtonElement
-	audioElements: HTMLAudioElement[];
 	nowPlayingDisplay: HTMLDivElement;
-	selectedTrackIdx: number;
+	player: ObsidianMixtapePlayer
 
-	constructor(playerContainer: HTMLDivElement, audioElements: HTMLAudioElement[], selectedTrackIdx: number) {
-		this.parentContainer = playerContainer;
-		this.selectedTrackIdx = selectedTrackIdx;
-		this.audioElements = audioElements;
-		this.container = playerContainer.createDiv({
+	constructor(player: ObsidianMixtapePlayer) {
+		this.player = player;
+	}
+
+	render() {
+		this.container = this.player.container.createDiv({
 			cls: 'mixtape-controls-container',
 		});
 		this.controlBar = this.container.createDiv({
 			cls: 'mixtape-controls',
 		});
 		this.btnPrev = this.controlBar.createEl('button', { text: '⏮️' });
-		this.btnPlayPause = this.controlBar.createEl('button', { text: '▶️'  });
+		this.btnPlayPause = this.controlBar.createEl('button', { text: '▶️' });
 		this.btnNext = this.controlBar.createEl('button', { text: '⏭️' });
-		this.nowPlayingDisplay = playerContainer.createDiv({ cls: 'mixtape-now-playing' });
+		this.nowPlayingDisplay = this.player.container.createDiv({ cls: 'mixtape-now-playing' });
 		this.nowPlayingDisplay.setText('');
 		this.registerListeners();
 	}
 
-	registerListeners() {
+	private registerListeners() {
 		this.btnPrev.addEventListener('click', () => {
 			this.goToPrev();
 		});
@@ -39,93 +40,89 @@ export default class ObsidianMixtapeControls {
 		});
 	}
 
-
 	/**
 	 * Restarts the currently selected track and puts it in a paused state.
 	 * If no track is selected, this method does nothing.
 	 */
 	restartSelectedTrack() {
-		const audio = this.audioElements[this.selectedTrackIdx];
-		if (!audio) {
+		const track = this.player.getSelectedTrack();
+		if (!track) {
 			return
 		}
-		if (!audio.paused) {
-			audio.pause()
+		if (!track.audio.paused) {
+			track.audio.pause()
 		}
-		audio.currentTime = 0;
+		track.audio.currentTime = 0;
 	}
 
 	updatePlayPauseText() {
-		const audio = this.audioElements[this.selectedTrackIdx];
-		if (audio && !audio.paused) {
-			this.btnPlayPause.setText('⏸️');
-			this.nowPlayingDisplay.setText(`Playing: ${audio.textContent}`);
-		} else if (audio) {
-			this.btnPlayPause.setText('▶️');
-			this.nowPlayingDisplay.setText(`Paused: ${audio.textContent}`);
-		} else {
+		const track = this.player.getSelectedTrack();
+		if (!track) {
 			this.btnPlayPause.setText('⏸️');
 			this.nowPlayingDisplay.setText('');
+			return
 		}
+		const targetButtonText = track.audio.paused ? '▶️' : '⏸️' 
+		const targetPlaybackStatus = track.audio.paused ? 'Paused' : 'Playing'
+		this.btnPlayPause.setText(targetButtonText);
+		this.nowPlayingDisplay.setText(`${targetPlaybackStatus}: ${track.audio.textContent}`);
 	}
 
-	pauseCurrent() {
-		const audio = this.audioElements[this.selectedTrackIdx];
-		if (audio) {
-			audio.pause();
+	pause() {
+		const track = this.player.getSelectedTrack();
+		if (track) {
+			track.audio.pause();
 			this.updatePlayPauseText();
 		}
 	}
 
-	goToNext() {
-		// first, pause the currently playing track if there is one
+	/** function to call externally, on events where playback of a track has ended */
+	handleTrackEnded() {
+		this.goToNext()
+	}
+
+	private goToNext() {
+		// first, restart and pause the currently playing track if there is one
 		this.restartSelectedTrack();
 		// increment the selected track index
-		this.selectedTrackIdx = (this.selectedTrackIdx + 1) % this.audioElements.length;
-		this.playCurrent();
+		let targetTrackIdx = this.player.selectedTrackIdx + 1
+		if (targetTrackIdx >= this.player.tracks.length) {
+			targetTrackIdx = 0	
+		}
+		this.player.setSelectedTrack(targetTrackIdx);
+		this.play();
 	}
 
-	goToPrev() {
-		// if we're on the first track, just restart it and return
+	private goToPrev() {
+		// if we're on the first track, loop back to the last track
+		let targetTrackIdx = this.player.selectedTrackIdx - 1
+		if (targetTrackIdx < 0) {
+			targetTrackIdx = this.player.tracks.length - 1	
+		}
 		this.restartSelectedTrack();
-		if (this.selectedTrackIdx === 0 && this.audioElements.length >= 1) {
-			this.restartSelectedTrack()
-			this.playCurrent()
-			return
-		}
-		this.selectedTrackIdx -= 1;
-		this.playCurrent();
+		this.player.selectedTrackIdx = targetTrackIdx;
+		this.play();
 	}
 
-	togglePlayback() {
-		console.log("toggling")
-		const currentAudio = this.audioElements[this.selectedTrackIdx];
-		if (!currentAudio && this.audioElements.length === 0) {
+	private togglePlayback() {
+		const track = this.player.getSelectedTrack();
+		if (!track) {
 			return
 		}
-		if (!currentAudio) {
-			this.selectedTrackIdx = 0;
-			this.playCurrent();
-			return
-		}
-		if (currentAudio.paused) {
-			this.playCurrent();
+		if (track.audio.paused) {
+			this.play();
 		} else {
-			this.pauseCurrent();
+			this.pause();
 		}
 	}
 
-	playCurrent() {
-		const audio = this.audioElements[this.selectedTrackIdx];
-		if (audio) {
-			audio.play();
+	/** plays the currently selected track, if there is one */
+	private play() {
+		const track = this.player.getSelectedTrack()
+		if (track) {
+			track.audio.play();
 			this.updatePlayPauseText();
+			return
 		}
-	}
-
-	playTrack(idx: number) {
-		this.restartSelectedTrack();
-		this.selectedTrackIdx = idx;
-		this.playCurrent();
 	}
 }

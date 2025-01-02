@@ -7,7 +7,7 @@ If your plugin does not need CSS, delete this file.
 
 */
 
-.mixtape-playback-bar-container {
+.mixtape-progress-bar-container {
 	width: 100%;
 	padding-top: 10px;
 	padding-bottom: 10px;

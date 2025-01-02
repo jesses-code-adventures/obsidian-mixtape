@@ -41,6 +41,24 @@ export async function getPathsAndContents(source: string, currentFolderPath: str
 	return new PathsAndContents(filePaths, fileContents as unknown[])
 }
 
+export function aggregateContents(pathsAndContents: PathsAndContents) {
+	let contents = '';
+	pathsAndContents.paths.forEach((rawPath, i) => {
+		if (!rawPath.endsWith('.md')) {
+			return
+		}
+		const content = pathsAndContents.contents[i];
+		if (content == null) {
+			return;
+		}
+		if (typeof content !== 'string') {
+			throw new Error('Expected markdown file to have string contents')
+		}
+		contents += content
+	});
+	return contents
+}
+
 export function isAudioLink(link: string): boolean {
 	const audioExtensions = ['mp3', 'wav', 'flac', 'm4a', 'ogg'];
 	const lower = link.toLowerCase();
