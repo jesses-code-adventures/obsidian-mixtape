@@ -13,7 +13,7 @@ The idea is to be able to keep audio files of versions of your songs in Obsidian
 ## Usage
 
 1. Have a directory for the project you're working on, and have a file in there called `_PROJECT.md` that has your audio files in the order you want them. _nb: this filename can be changed in the plugin's settings._
-2. Create a file in that folder (I like to call it `\_mixtape.md`) and create a `mixtape` element in a codeblock (triple backticks).
+2. Create a file in that folder (I like to call it `_mixtape.md`) and create a `mixtape` element in a codeblock (triple backticks).
 
 ````text
 ```mixtape
